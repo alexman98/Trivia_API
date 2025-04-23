@@ -30,15 +30,23 @@ class TriviaTestCase(unittest.TestCase):
 
     def tearDown(self):
         """Executed after each test"""
-        with self.app.app_context():
-            db.session.remove()
-            db.drop_all()
+        #with self.app.app_context():
+            #db.session.remove()
+            #db.drop_all()
+            
 
     """
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    def test_get_categories(self):
+        """Test GET /categories endpoint"""
+        response = self.client.get('/categories')
+        data = response.get_json()
 
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('categories', data)
+        self.assertTrue(len(data['categories']) > 0)
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

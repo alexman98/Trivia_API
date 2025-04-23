@@ -16,21 +16,36 @@ def create_app(test_config=None):
         database_path = test_config.get('SQLALCHEMY_DATABASE_URI')
         setup_db(app, database_path=database_path)
 
+    CORS(app, resources={r"/*": {"origins": "*"}})
     """
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+    Yes@TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
     """
+    
     with app.app_context():
         db.create_all()
 
     """
-    @TODO: Use the after_request decorator to set Access-Control-Allow
+    Yes@TODO: Use the after_request decorator to set Access-Control-Allow
     """
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        return response
 
     """
-    @TODO:
+    Yes@TODO:
     Create an endpoint to handle GET requests
     for all available categories.
     """
+    @app.route('/categories', methods=['GET'])
+    def get_categories():
+        categories = Category.query.all()
+        formatted_categories = {category.id: category.type for category in categories}
+        return jsonify({
+            'success': True,
+            'categories': formatted_categories
+        }), 200
 
 
     """
@@ -101,7 +116,40 @@ def create_app(test_config=None):
     @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
+
     """
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            'success': False,
+            'error': 404,
+            'message': 'Resource not found'
+        }), 404
+    
+    @app.errorhandler(422)
+    def errorhandler(error):
+        return jsonify({
+            'success': False,
+            'error': 422,
+            'message': 'Unprocessable entity'
+        }), 422
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return jsonify({
+            'success': False,
+            'error': 500,
+            'message': 'Internal server error'
+        }), 500
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            'success': False,
+            'error': 400,
+            'message': 'Bad request'
+        }), 400
+   
+
+    
 
     return app
 
