@@ -4,7 +4,7 @@ import random
 
 from models import setup_db, Question, Category, db
 
-QUESTIONS_PER_PAGE = 10
+QUESTIONS_PER_PAGE = 8
 
 def create_app(test_config=None):
     # create and configure the app
@@ -29,8 +29,9 @@ def create_app(test_config=None):
     """
     @app.after_request
     def after_request(response):
+
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS') 
         return response
 
     """
@@ -38,6 +39,7 @@ def create_app(test_config=None):
     Create an endpoint to handle GET requests
     for all available categories.
     """
+
     @app.route('/categories', methods=['GET'])
     def get_categories():
         categories = Category.query.all()
@@ -55,19 +57,22 @@ def create_app(test_config=None):
     This endpoint should return a list of questions,
     number of total questions, current category, categories.
 
-    TEST: At this point, when you start the application
+    TEST: At this point, when you start the application 
     you should see questions and categories generated,
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+
     @app.route('/questions', methods=['GET'])
+    
     def get_questions():
+
         page = request.args.get('page', 1, type=int)
         start = (page - 1) * QUESTIONS_PER_PAGE
         end = start + QUESTIONS_PER_PAGE
 
         questions = Question.query.all()
-        formatted_questions = [question.format() for question in questions]
+        formatted_questions = [question.format() for question in questions] 
         total_questions = len(formatted_questions)
 
         if total_questions == 0:
@@ -92,7 +97,9 @@ def create_app(test_config=None):
     This removal will persist in the database and when you refresh the page.
     """
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
+
     def delete_question(question_id):
+
         try:
             question = Question.query.get(question_id)
             if question is None:
@@ -103,6 +110,7 @@ def create_app(test_config=None):
                 'success': True,
                 'deleted': question_id
             }), 200
+        
         except Exception as e:
             print(e)
             db.session.rollback()
@@ -232,6 +240,7 @@ def create_app(test_config=None):
 
     """
     Yes@TODO:
+
     Create a POST endpoint to get questions to play the quiz.
     This endpoint should take category and previous question parameters
     and return a random questions within the given category,
@@ -293,12 +302,14 @@ def create_app(test_config=None):
             'message': 'Unprocessable entity'
         }), 422
     @app.errorhandler(500)
+
     def internal_server_error(error):
         return jsonify({
             'success': False,
             'error': 500,
             'message': 'Internal server error'
         }), 500
+    
     @app.errorhandler(400)
     def bad_request(error):
         return jsonify({

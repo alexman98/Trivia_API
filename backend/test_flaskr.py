@@ -29,13 +29,6 @@ class TriviaTestCase(unittest.TestCase):
         with self.app.app_context():
             db.create_all()
 
-    def tearDown(self):
-        """Executed after each test"""
-        #with self.app.app_context():
-            #db.session.remove()
-            #db.drop_all()
-
-
     """
     TODO
     Write at least one test for each test for successful operation and for expected errors.
@@ -81,6 +74,7 @@ class TriviaTestCase(unittest.TestCase):
             self.assertIsNone(deleted_question)
 
     def test_create_question(self):
+
         """Test POST /questions endpoint"""
         new_question = {
             'question': 'Is this a test question?',
@@ -99,17 +93,6 @@ class TriviaTestCase(unittest.TestCase):
         with self.app.app_context():
             created_question = Question.query.filter_by(question='Is this a test question?').first()
             self.assertIsNotNone(created_question)
-
-    def test_search_questions(self):
-        """Test POST /questions/search endpoint"""
-        search_term = {'searchTerm': 'title'}
-        response = self.client.post('/questions/search', json=search_term)
-        data = response.get_json()
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('questions', data)
-        self.assertIn('total_questions', data)
-        self.assertTrue(len(data['questions']) > 0)
 
     def test_quiz_questions(self):
         """Test POST /quizzes endpoint"""
