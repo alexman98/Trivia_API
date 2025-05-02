@@ -1,6 +1,7 @@
 import os
 import unittest
 import json
+from dotenv import load_dotenv
 
 from flaskr import create_app
 from models import db, Question, Category
@@ -11,10 +12,12 @@ class TriviaTestCase(unittest.TestCase):
 
     def setUp(self):
         """Define test variables and initialize app."""
-        self.database_name = "trivia_test"
-        self.database_user = "postgres"
-        self.database_password = "password"
-        self.database_host = "localhost:5432"
+
+        load_dotenv()
+        self.database_name = os.getenv('DATABASE_NAME')
+        self.database_user = os.getenv('DATABASE_USER')
+        self.database_password = os.getenv('DATABASE_PASSWORD')
+        self.database_host = os.getenv('DATABASE_HOST')
         self.database_path = f"postgresql://{self.database_user}:{self.database_password}@{self.database_host}/{self.database_name}"
 
         # Create app with the test configuration
@@ -44,7 +47,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_get_questions(self):
         """Test GET /questions endpoint"""
-        response = self.client.get('/questions')
+        response = self.client.get('/questions?page=1')
         data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
@@ -94,6 +97,27 @@ class TriviaTestCase(unittest.TestCase):
             created_question = Question.query.filter_by(question='Is this a test question?').first()
             self.assertIsNotNone(created_question)
 
+    def test_search_questions(self):
+        """Test POST /questions/search endpoint"""
+        search_term = {'searchTerm': 'test'}
+        response = self.client.post('/questions/search', json=search_term)
+        data = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('questions', data)
+        self.assertIn('total_questions', data)
+        self.assertTrue(len(data['questions']) > 0)
+
+    def test_get_questions_by_category(self):
+        """Test GET /categories/<int:category_id>/questions endpoint"""
+        response = self.client.get('/categories/1/questions')
+        data = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('questions', data)
+        self.assertIn('total_questions', data)
+        self.assertTrue(len(data['questions']) > 0)
+
     def test_quiz_questions(self):
         """Test POST /quizzes endpoint"""
         quiz_data = {
@@ -106,6 +130,26 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('question', data)
         self.assertIn('quiz_category', data)
+
+    def test_404_error(self):
+        """Test 404 error for non-existing endpoint"""
+        response = self.client.get('/non_existing_endpoint')
+        self.assertEqual(response.status_code, 404)
+
+    def test_quiz_missing_data(self):
+        """Test POST /quizzes endpoint with missing data"""
+        quiz_data = {
+            'previous_questions': []
+        }
+        response = self.client.post('/quizzes', json=quiz_data)
+        self.assertEqual(response.status_code, 422)
+
+    
+
+      
+
+
+    
         
 
 # Make the tests conveniently executable
